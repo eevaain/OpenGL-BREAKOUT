@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <SDL.h>
 #include "./constants.h" // local folder "./"
+#include <stdbool.h>
 
 // doest matter where you put the pointer -> compiler interprets same
 // pointer is the TYPE
@@ -19,9 +20,9 @@
 // window is a variable that holds a value... the value is an address. by using asterik
 // we are saying "value in address" -> and we are setting THAT to NULL. 
 
-int game_is_running = FALSE;
+int game_is_running = false;
 SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL; 
+SDL_Renderer* renderer = false; 
 
 int last_frame_time = 0; // milliseconds of the last frame called
 
@@ -76,7 +77,14 @@ void process_input() {
 	case SDL_KEYDOWN:
 		if (event.key.keysym.sym == SDLK_ESCAPE)
 			game_is_running = FALSE; 
+
+		// TODO: set paddle velocity based on left / right arrow keys
 		break; 
+	case SDL_KEYUP:
+
+
+		// reset paddle velocity based on left / right arrow keys
+		break;
 	}
 }
 
@@ -87,6 +95,8 @@ void setup() {
 	ball.y = 20;
 	ball.width = 15;
 	ball.height = 15;
+
+
 }
 
 
@@ -97,10 +107,19 @@ void update() {
 		/* ... do work until timeout has elapsed */
 	}
 
+	// get delta time factor converted to seconds to update objects
+	float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f; //float div
+
 	last_frame_time = SDL_GetTicks();
 
-	ball.x += 2;
-	ball.y += 2;
+	ball.x += 70 * delta_time;
+	ball.y += 50 * delta_time; 
+
+
+
+
+
+
 }
 
 void render() {
@@ -146,15 +165,11 @@ int main() {
 	setup(); // #2 variables of game
 
 	while (game_is_running) { // #3 game loop 
-
 		process_input(); //#3.1 process keyboard input into game state changes
 		update();
 		render(); //clears screen, draws pixels, double buffer
-
 	}
-
 	destroy_window(); // when game_is_running is false this runs!
-
 	return 0;
 }
 
