@@ -107,6 +107,7 @@ void update() {
 		/* ... do work until timeout has elapsed */
 	}
 
+
 	// get delta time factor converted to seconds to update objects
 	float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f; //float div
 
@@ -116,7 +117,7 @@ void update() {
 	ball.y += 50 * delta_time; 
 
 
-
+	// balls
 
 
 
