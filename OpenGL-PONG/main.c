@@ -22,7 +22,19 @@
 
 int game_is_running = false;
 SDL_Window* window = NULL;
-SDL_Renderer* renderer = false; 
+SDL_Renderer* renderer = false;  
+
+
+// * <---  generates the address and we can access this addresss using a variable called "renderer" 
+// SDL_Renderer IS a TYPE 
+// renderer is NOT being created!! its "*"!!!!! the variable name renderer is how we REFERENCE *
+
+// 0000 0000 -> 'L' 
+// 0000 0000 -> '0' 
+// SDL_Renderer is making sense of whatever is stored in the address just like how int interprets 'h' as 104 but char interprets it as 'h' even tho they both point to the same memory location
+
+// PROPERLY UNDERSTAND HOW TYPES WORK & POINTERS
+
 
 int last_frame_time = 0; // milliseconds of the last frame called
 
@@ -57,6 +69,7 @@ int initialize_window(void) {
 	}
 	// -1 means default display driver, 0 means no special way of rendering
 	renderer = SDL_CreateRenderer(window, -1, 0);
+
 	if (!renderer) {
 		fprintf(stderr, "Error creating an SDL renderer.\n");
 		return FALSE;
