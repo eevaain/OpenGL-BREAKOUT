@@ -122,7 +122,11 @@ void update() {
 
 
 	// get delta time factor converted to seconds to update objects
+	// we divide by 1000 because we set "1000/30" to convert back to seconds from milliseconds? 
+	// so SDL_GetTicks really is just .......  the system time MINUS system time of last frame! remember, last_frame_time is also dependent on system time + the initial FRAME_TARGET_TIME, 
+	// which is 33.3 ms
 	float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f; //float div
+	
 
 	last_frame_time = SDL_GetTicks();
 
