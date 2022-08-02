@@ -18,7 +18,7 @@
 // window is a POINTER to SDL_Window. SDL_Window is a type. 
 
 // window is a variable that holds a value... the value is an address. by using asterik
-// we are saying "value in address" -> and we are setting THAT to NULL. 
+// we are saying "value in address" -> and we are setting THAT to NULL...
 
 int game_is_running = false;
 SDL_Window* window = NULL;
