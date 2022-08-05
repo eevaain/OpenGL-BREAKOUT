@@ -1,225 +1,205 @@
 #include <stdio.h>
-#include <SDL.h>
-#include "./constants.h" // local folder "./"
 #include <stdbool.h>
+#include <SDL.h>
+#include "./constants.h"
 
-// doest matter where you put the pointer -> compiler interprets same
-// pointer is the TYPE
-// declaration consists of TYPE followed by VARIABLE
-// pointer is a variable which stores the address of another variable
-//  window is the NAME of the POINTER variable
-// window POINTS to the address of the return TYPE SDL_Window
-// NULL is the variable declaration
-// SDL_Window* window is the pointer variable declaration
-// we set NULL value to pointer variable because we dont have an exact address to assign
-// this is called a NULL pointer, therefore points to nothing
-// since SDL_Window is the type, in the line below, we're saying "return window
-// in C we initialize our variables first so we understand WHEN and HOW they are being used
-// window is a POINTER to SDL_Window. SDL_Window is a type. 
 
-// window is a variable that holds a value... the value is an address. by using asterik
-// we are saying "value in address" -> and we are setting THAT to NULL...
-
+///////////////////////////////////////////////////////////////////////////////
+// Global variables
+///////////////////////////////////////////////////////////////////////////////
 int game_is_running = false;
 SDL_Window* window = NULL;
-SDL_Renderer* renderer = false;  
+SDL_Renderer* renderer = NULL;
+int last_frame_time = 0;
 
+///////////////////////////////////////////////////////////////////////////////
+// Declare two game objects for the ball and the paddle
+///////////////////////////////////////////////////////////////////////////////
+struct game_object {
+    float x;
+    float y;
+    float width;
+    float height;
+    float vel_x;
+    float vel_y;
+} ball, paddle;
 
-// * <---  generates the address and we can access this addresss using a variable called "renderer" 
-// SDL_Renderer IS a TYPE 
-// renderer is NOT being created!! its "*"!!!!! the variable name renderer is how we REFERENCE *
-
-// 0000 0000 -> 'L' 
-// 0000 0000 -> '0' 
-// SDL_Renderer is making sense of whatever is stored in the address just like how int interprets 'h' as 104 but char interprets it as 'h' even tho they both point to the same memory location
-
-// PROPERLY UNDERSTAND HOW TYPES WORK & POINTERS
-
-
-int last_frame_time = 0; // milliseconds of the last frame called
-
-struct ball {
-	float x;
-	float y;
-	float width;
-	float height;
-} ball; //already declare ball
-
-// whenever a function doesnt recieve anything, speficy void in parameters
+///////////////////////////////////////////////////////////////////////////////
+// Function to initialize our SDL window
+///////////////////////////////////////////////////////////////////////////////
 int initialize_window(void) {
-	// initializes everything cus we're lazy
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		// just a formatted printf, outputs to stderr
-		fprintf(stderr, "Error initializing SDL.\n");
-		// return 0 if something went bad
-		return FALSE;
-	}
-	window = SDL_CreateWindow(
-		NULL,
-		SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED,
-		WINDOW_WIDTH,
-		WINDOW_HEIGHT,
-		SDL_WINDOW_BORDERLESS
-	);
-	if (!window) {
-		// write to default error file where i can write error messages
-		fprintf(stderr, "Error creating SDL window .\n");
-		return 0;
-	}
-	// -1 means default display driver, 0 means no special way of rendering
-	renderer = SDL_CreateRenderer(window, -1, 0);
-
-	if (!renderer) {
-		fprintf(stderr, "Error creating an SDL renderer.\n");
-		return FALSE;
-	}
-	return TRUE;
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+        fprintf(stderr, "Error initializing SDL.\n");
+        return false;
+    }
+    window = SDL_CreateWindow(
+        NULL,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        SDL_WINDOW_BORDERLESS
+    );
+    if (!window) {
+        fprintf(stderr, "Error creating SDL Window.\n");
+        return false;
+    }
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    if (!renderer) {
+        fprintf(stderr, "Error creating SDL Renderer.\n");
+        return false;
+    }
+    return true;
 }
 
-
-
-void process_input() {
-	SDL_Event event;
-	SDL_PollEvent(&event);
-
-	switch (event.type) { // does event inherit .type from SDL_Event or SDL_PollEvent? 
-	case SDL_QUIT:
-		game_is_running = FALSE;// x button of window
-		break;
-	case SDL_KEYDOWN:
-		if (event.key.keysym.sym == SDLK_ESCAPE)
-			game_is_running = FALSE; 
-
-		// TODO: set paddle velocity based on left / right arrow keys
-		break; 
-	case SDL_KEYUP:
-
-
-		// reset paddle velocity based on left / right arrow keys
-		break;
-	}
+///////////////////////////////////////////////////////////////////////////////
+// Function to poll SDL events and process keyboard input
+///////////////////////////////////////////////////////////////////////////////
+void process_input(void) {
+    SDL_Event event;
+    SDL_PollEvent(&event);
+    switch (event.type) {
+        case SDL_QUIT:
+            game_is_running = false;
+            break;
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                game_is_running = false;
+            }
+            // TODO: Set paddle velocity based on left/right arrow keys
+            if (event.key.keysym.sym == SDLK_a) {
+                paddle.vel_x = -600;
+            }
+            if (event.key.keysym.sym == SDLK_d) {
+                paddle.vel_x = 600;
+            }
+            break;
+        case SDL_KEYUP:
+            paddle.vel_x = 0;
+            break;
+        default:
+           break;
+    }
 }
 
-
-
-void setup() {
-	ball.x = 20;
-	ball.y = 20;
-	ball.width = 15;
-	ball.height = 15;
-
-
+///////////////////////////////////////////////////////////////////////////////
+// Setup function that runs once at the beginning of our program
+///////////////////////////////////////////////////////////////////////////////
+void setup(void) {
+    // Initialize the ball object moving down at a constant velocity
+    ball.width = 15;
+    ball.height = 15;
+    ball.x = 20;
+    ball.y = 20;
+    ball.vel_x = 300;
+    ball.vel_y = 300;
+    // Initialize the paddle position at the bottom of the screen
+    paddle.width = 100;
+    paddle.height = 20;
+    paddle.x = (WINDOW_WIDTH / 2) - (paddle.width / 2);
+    paddle.y = WINDOW_HEIGHT - 40;
+    paddle.vel_x = 0;
+    paddle.vel_y = 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Update function with a fixed time step
+///////////////////////////////////////////////////////////////////////////////
+void update(void) {
+    // Calculate how much we have to wait until we reach the target frame time
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
 
-void update() {
-	// WASTE time/sleep until we reach frame target time
-	Uint32 timeout = last_frame_time + FRAME_TARGET_TIME;
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-		/* ... do work until timeout has elapsed */
-	}
+    // Only delay if we are too fast too update this frame
+    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME)
+        SDL_Delay(time_to_wait);
+
+    // Get delta_time factor converted to seconds to be used to update objects
+    float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0;
+
+    // Store the milliseconds of the current frame to be used in the next one
+    last_frame_time = SDL_GetTicks();
+
+    // Update ball position based on its velocity
+    ball.x += ball.vel_x * delta_time;
+    ball.y += ball.vel_y * delta_time;
+
+    // TODO: Update paddle position based on its velocity
+    
+    paddle.x += paddle.vel_x * delta_time;
 
 
-	// get delta time factor converted to seconds to update objects
-	// we divide by 1000 because we set "1000/30" to convert back to seconds from milliseconds? 
-	// so SDL_GetTicks really is just .......  the system time MINUS system time of last frame! remember, last_frame_time is also dependent on system time + the initial FRAME_TARGET_TIME, 
-	// which is 33.3 ms
-	float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f; //float div
-	
+    // TODO: Check for ball collision with the walls
+    // ...
 
-	last_frame_time = SDL_GetTicks();
+    // TODO: Check for ball collision with the paddle
+    // ...
 
-	ball.x += 70 * delta_time;
-	ball.y += 50 * delta_time; 
+    // TODO: Prevent paddle from moving outside the boundaries of the window
+    // ...
+   
+    if (paddle.x <= 0) 
+        paddle.vel_x = 600;
+    if (paddle.x >= WINDOW_WIDTH - 100) 
+        paddle.vel_x = -600;
 
-
-	// balls
-
-
-
+    // TODO: Check for game over when ball hits the bottom part of the screen
+    // ...
 }
 
-void render() {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
+///////////////////////////////////////////////////////////////////////////////
+// Render function to draw game objects in the SDL window
+///////////////////////////////////////////////////////////////////////////////
+void render(void) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
 
-	//draw rec (SDL_Rect is a type from SDL) 
-	SDL_Rect ball_rect = {
-		(int)ball.x, // (int) is called a "cast" -> casting float to int
-		(int)ball.y,
-		(int)ball.width,
-		(int)ball.height
-	};
+    // Draw a rectangle for the ball object
+    SDL_Rect ball_rect = {
+        (int)ball.x,
+        (int)ball.y,
+        (int)ball.width,
+        (int)ball.height
+    };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &ball_rect);
 
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	// we pass in the address of the struct
-	// instead of passing all the values of the struct one by one,
-	// we just pass in a pointer of where the object is located
-	// by doing this, we AVOID copying values in memory. 
-	SDL_RenderFillRect(renderer, &ball_rect);
+    // Draw a rectangle for the paddle object
+    SDL_Rect paddle_rect = {
+        (int)paddle.x,
+        (int)paddle.y,
+        (int)paddle.width,
+        (int)paddle.height
+    };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &paddle_rect);
 
-	SDL_RenderPresent(renderer); 
-
-	// here is where we an start drawing our game objs
-	// SDL use double buffering 
-	//we see front buffer -> back buffer populating.. when its done
-	// buffers "swap"
-	// swaps "virtual" screen buffers
-	SDL_RenderPresent(renderer);
-
+    SDL_RenderPresent(renderer);
 }
 
-void destroy_window() {
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+///////////////////////////////////////////////////////////////////////////////
+// Function to destroy SDL window and renderer
+///////////////////////////////////////////////////////////////////////////////
+void destroy_window(void) {
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Main function
+///////////////////////////////////////////////////////////////////////////////
+int main(int argc, char* args[]) {
+    game_is_running = initialize_window();
 
-int main() {
-	int game_is_running = initialize_window(); //#1 initialize window
+    setup();
 
-	setup(); // #2 variables of game
+    while (game_is_running) {
+        process_input();
+        update();
+        render();
+    }
 
-	while (game_is_running) { // #3 game loop 
-		process_input(); //#3.1 process keyboard input into game state changes
-		update();
-		render(); //clears screen, draws pixels, double buffer
-	}
-	destroy_window(); // when game_is_running is false this runs!
-	return 0;
+    destroy_window();
+
+    return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// in old systems, rendering pixels was easy -> you "poke" pixels into memory
-// addresses
