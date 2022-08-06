@@ -91,7 +91,7 @@ void setup(void) {
     ball.width = 15;
     ball.height = 15;
     ball.x = 300;
-    ball.y = -100;
+    ball.y = -200;
     ball.vel_x = 200;
     ball.vel_y = 200;
     // Initialize the paddle position at the bottom of the screen
@@ -133,13 +133,11 @@ void update(void) {
     if (ball.y < 0) // collision with ceiling
         ball.vel_y = (ball.vel_y * -1);
  
-    // TODO: Check for ball collision with the paddle [GOTTA FIX THIS ONE]!!!!!!!!!!!!!!!!!!!!!!
-    // ..
-
-    if (ball.y == paddle.y && ball.x == paddle.x) {
-        if (paddle.vel_x < 0) {
-           ball.vel_y = -200;
-       }
+    // TODO: Check for ball collision with the paddle 
+    if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+        if (ball.y > (paddle.y - paddle.height)) { // REMEMBER BECAUSE 600 HEIGHT IS THE BOTTOM OF SCREEN!
+            ball.vel_y = (ball.vel_y * -1);
+        }
     }
 
 
