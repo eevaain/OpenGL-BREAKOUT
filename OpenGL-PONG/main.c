@@ -66,7 +66,7 @@ void process_input(void) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 game_is_running = false;
             }
-            // TODO: Set paddle velocity based on left/right arrow keys
+            // Set paddle velocity based on left/right arrow keys
             if (event.key.keysym.sym == SDLK_a) {
                 paddle.vel_x = -600;
             }
@@ -74,6 +74,7 @@ void process_input(void) {
                 paddle.vel_x = 600;
             }
             break;
+        // when key is let go
         case SDL_KEYUP:
             paddle.vel_x = 0;
             break;
@@ -89,10 +90,10 @@ void setup(void) {
     // Initialize the ball object moving down at a constant velocity
     ball.width = 15;
     ball.height = 15;
-    ball.x = 20;
-    ball.y = 20;
-    ball.vel_x = 300;
-    ball.vel_y = 300;
+    ball.x = 300;
+    ball.y = -100;
+    ball.vel_x = 200;
+    ball.vel_y = 200;
     // Initialize the paddle position at the bottom of the screen
     paddle.width = 100;
     paddle.height = 20;
@@ -123,27 +124,36 @@ void update(void) {
     ball.x += ball.vel_x * delta_time;
     ball.y += ball.vel_y * delta_time;
 
-    // TODO: Update paddle position based on its velocity
-    
+    // Update paddle position based on its velocity
     paddle.x += paddle.vel_x * delta_time;
 
-
     // TODO: Check for ball collision with the walls
-    // ...
+    if (ball.x > WINDOW_WIDTH || ball.x < 0) // collision with left-right walls
+        ball.vel_x = (ball.vel_x * -1);
+    if (ball.y < 0) // collision with ceiling
+        ball.vel_y = (ball.vel_y * -1);
+ 
+    // TODO: Check for ball collision with the paddle [GOTTA FIX THIS ONE]!!!!!!!!!!!!!!!!!!!!!!
+    // ..
 
-    // TODO: Check for ball collision with the paddle
-    // ...
+    if (ball.y == paddle.y && ball.x == paddle.x) {
+        if (paddle.vel_x < 0) {
+           ball.vel_y = -200;
+       }
+    }
 
-    // TODO: Prevent paddle from moving outside the boundaries of the window
-    // ...
-   
-    if (paddle.x <= 0) 
-        paddle.vel_x = 600;
-    if (paddle.x >= WINDOW_WIDTH - 100) 
+
+    // Prevent paddle from moving outside the boundaries of the window
+    if (paddle.x <= 0)
+        paddle.vel_x = 600; //probably a better solution than adding the "offset"...
+    if (paddle.x >= WINDOW_WIDTH - 100)
         paddle.vel_x = -600;
 
-    // TODO: Check for game over when ball hits the bottom part of the screen
-    // ...
+    // Check for game over when ball hits the bottom part of the screen
+    if (ball.y > WINDOW_HEIGHT) {
+        game_is_running = false;
+    }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
