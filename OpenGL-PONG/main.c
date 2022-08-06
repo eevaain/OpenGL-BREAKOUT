@@ -63,20 +63,20 @@ void process_input(void) {
             game_is_running = false;
             break;
         case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) 
                 game_is_running = false;
-            }
             // Set paddle velocity based on left/right arrow keys
-            if (event.key.keysym.sym == SDLK_a) {
+            if (event.key.keysym.sym == SDLK_a) 
                 paddle.vel_x = -600;
-            }
-            if (event.key.keysym.sym == SDLK_d) {
+            if (event.key.keysym.sym == SDLK_d) 
                 paddle.vel_x = 600;
-            }
             break;
         // when key is let go
         case SDL_KEYUP:
-            paddle.vel_x = 0;
+            if (event.key.keysym.sym == SDLK_a)
+                paddle.vel_x = 0;
+            if (event.key.keysym.sym == SDLK_d)
+                paddle.vel_x = 0;
             break;
         default:
            break;
@@ -126,20 +126,20 @@ void update(void) {
 
     // Update paddle position based on its velocity
     paddle.x += paddle.vel_x * delta_time;
+    paddle.y += paddle.vel_y * delta_time; // nearly forgot this one... why does the game still work when i remove this? 
 
     // TODO: Check for ball collision with the walls
-    if (ball.x > WINDOW_WIDTH || ball.x < 0) // collision with left-right walls
+    if (ball.x + ball.width >= WINDOW_WIDTH || ball.x < 0) // collision with left-right walls
         ball.vel_x = (ball.vel_x * -1);
-    if (ball.y < 0) // collision with ceiling
+    if (ball.y <= 0) // collision with ceiling
         ball.vel_y = (ball.vel_y * -1);
  
     // TODO: Check for ball collision with the paddle 
     if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
-        if (ball.y > (paddle.y - paddle.height)) { // REMEMBER BECAUSE 600 HEIGHT IS THE BOTTOM OF SCREEN!
+        if (ball.y > paddle.y - paddle.height) { // REMEMBER BECAUSE 600 HEIGHT IS THE BOTTOM OF SCREEN!
             ball.vel_y = (ball.vel_y * -1);
         }
     }
-
 
     // Prevent paddle from moving outside the boundaries of the window
     if (paddle.x <= 0)
@@ -148,10 +148,10 @@ void update(void) {
         paddle.vel_x = -600;
 
     // Check for game over when ball hits the bottom part of the screen
-    if (ball.y > WINDOW_HEIGHT) {
+    if (ball.y + ball.height > WINDOW_HEIGHT) {
         game_is_running = false;
     }
-
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
