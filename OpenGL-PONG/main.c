@@ -57,36 +57,36 @@ void process_input(void) {
     SDL_Event event;
     SDL_PollEvent(&event);
     switch (event.type) {
-        case SDL_QUIT:
+    case SDL_QUIT:
+        game_is_running = false;
+        break;
+    case SDL_KEYDOWN:
+        if (event.key.keysym.sym == SDLK_ESCAPE)
             game_is_running = false;
-            break;
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE) 
-                game_is_running = false;
-            // Set paddle velocity of first paddle based on A and D
-            if (event.key.keysym.sym == SDLK_a) 
-                paddle.vel_y = -600;
-            if (event.key.keysym.sym == SDLK_d) 
-                paddle.vel_y = 600;
-            // set paddle velocity of second paddle based on J and L
-            if (event.key.keysym.sym == SDLK_j)
-                paddleTwo.vel_y = -600;
-            if (event.key.keysym.sym == SDLK_l)
-                paddleTwo.vel_y = 600;
-            break;
+        // Set paddle velocity of first paddle based on A and D
+        if (event.key.keysym.sym == SDLK_a)
+            paddle.vel_y = -600;
+        if (event.key.keysym.sym == SDLK_d)
+            paddle.vel_y = 600;
+        // set paddle velocity of second paddle based on J and L
+        if (event.key.keysym.sym == SDLK_j)
+            paddleTwo.vel_y = -600;
+        if (event.key.keysym.sym == SDLK_l)
+            paddleTwo.vel_y = 600;
+        break;
         // when key is let go
-        case SDL_KEYUP:
-            if (event.key.keysym.sym == SDLK_a)
-                paddle.vel_y = 0;
-            if (event.key.keysym.sym == SDLK_d)
-                paddle.vel_y = 0;
-            if (event.key.keysym.sym == SDLK_j)
-                paddleTwo.vel_y = 0;
-            if (event.key.keysym.sym == SDLK_l)
-                paddleTwo.vel_y = 0;
-            break;
-        default:
-           break;
+    case SDL_KEYUP:
+        if (event.key.keysym.sym == SDLK_a)
+            paddle.vel_y = 0;
+        if (event.key.keysym.sym == SDLK_d)
+            paddle.vel_y = 0;
+        if (event.key.keysym.sym == SDLK_j)
+            paddleTwo.vel_y = 0;
+        if (event.key.keysym.sym == SDLK_l)
+            paddleTwo.vel_y = 0;
+        break;
+    default:
+        break;
     }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,10 +101,10 @@ void setup(void) {
     ball.vel_x = -200;
     ball.vel_y = 200;
     // Initialize the paddle position at the bottom of the screen
-    paddle.width = 100;
-    paddle.height = 20;
-    paddle.x = (WINDOW_WIDTH / 2) - (paddle.width / 2);
-    paddle.y = WINDOW_HEIGHT - 40; // since -40 represents left-most width "border" paddle 2. 
+    paddle.width = 20;
+    paddle.height = 100;
+    paddle.x = (WINDOW_WIDTH - 780);
+    paddle.y = WINDOW_HEIGHT / 2;
     paddle.vel_x = 0;
     paddle.vel_y = 0;
     // Initialize second paddle
@@ -152,7 +152,7 @@ void update(void) {
     // Check for ball collision with paddle 1
     if (ball.y > paddle.y && ball.y < paddle.y + paddle.height) {
         if (ball.x < paddle.x + paddle.width)
-            ball.vel_x = ball.vel_x * -1; 
+            ball.vel_x = ball.vel_x * -1;
     }
     // Check for ball collision with paddle 2
     if (ball.y > paddleTwo.y && ball.y < paddleTwo.y + paddleTwo.height) {
