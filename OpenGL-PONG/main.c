@@ -6,6 +6,8 @@
 
 // TODO -> make it 2 players??
 
+// draw new initial objects, decrlare new struct for 2nd paddle
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Global variables
