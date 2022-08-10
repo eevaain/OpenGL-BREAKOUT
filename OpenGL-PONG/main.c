@@ -3,10 +3,6 @@
 #include <SDL.h>
 #include "./constants.h"
 
-
-// TODO -> make it 2 players??
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Global variables
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +97,7 @@ void setup(void) {
     paddle.width = 100;
     paddle.height = 20;
     paddle.x = (WINDOW_WIDTH / 2) - (paddle.width / 2);
-    paddle.y = WINDOW_HEIGHT - 40;
+    paddle.y = WINDOW_HEIGHT - 40; // since -40 represents left-most width "border" paddle 2. 
     paddle.vel_x = 0;
     paddle.vel_y = 0;
 }
